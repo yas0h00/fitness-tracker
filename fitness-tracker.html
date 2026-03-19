@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fitness Tracker — Study Warrior</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0a0f;--surface:#12121a;--surface2:#1a1a26;--border:#2a2a3e;
+  --accent:#7c3aed;--accent2:#06b6d4;--accent3:#f59e0b;
+  --green:#10b981;--red:#ef4444;--purple:#a855f7;--orange:#f97316;
+  --text:#e2e8f0;--muted:#64748b;--white:#ffffff;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;top:-50%;left:-50%;width:200%;height:200%;
+  background:radial-gradient(ellipse at 20% 20%,rgba(124,58,237,.07) 0%,transparent 50%),
+             radial-gradient(ellipse at 80% 80%,rgba(16,185,129,.05) 0%,transparent 50%),
+             radial-gradient(ellipse at 50% 50%,rgba(245,158,11,.04) 0%,transparent 60%);
+  z-index:0;pointer-events:none;}
+.container{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:28px 16px;}
+
+/* Header */
+.header{text-align:center;margin-bottom:32px;}
+.header-badge{display:inline-block;background:linear-gradient(135deg,rgba(16,185,129,.2),rgba(6,182,212,.2));border:1px solid rgba(16,185,129,.4);color:var(--accent2);font-family:'Space Mono',monospace;font-size:11px;letter-spacing:3px;padding:6px 16px;border-radius:20px;margin-bottom:14px;text-transform:uppercase;}
+h1{font-size:clamp(26px,5vw,44px);font-weight:800;background:linear-gradient(135deg,var(--white) 0%,var(--green) 50%,var(--accent2) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1;margin-bottom:8px;}
+.header-sub{color:var(--muted);font-family:'Space Mono',monospace;font-size:12px;}
+
+/* DB Banner */
+.db-banner{display:flex;align-items:center;gap:10px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25);border-radius:12px;padding:10px 16px;margin-bottom:22px;font-family:'Space Mono',monospace;font-size:11px;color:var(--green);}
+.db-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse-dot 2s infinite;flex-shrink:0;}
+
+/* Stats bar */
+.stats-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:24px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;text-align:center;position:relative;overflow:hidden;transition:transform .2s,border-color .2s;}
+.stat-card:hover{transform:translateY(-2px);border-color:var(--accent);}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--green),var(--accent2));}
+.stat-num{font-size:24px;font-weight:800;color:var(--white);display:block;}
+.stat-label{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-top:4px;}
+
+/* Section cards */
+.section-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:22px;margin-bottom:22px;}
+.section-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent2);margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+
+/* Weight log */
+.weight-row{display:flex;gap:10px;align-items:center;margin-bottom:12px;}
+.weight-input{background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Space Mono',monospace;font-size:14px;padding:10px 14px;outline:none;transition:border-color .2s;width:120px;}
+.weight-input:focus{border-color:rgba(16,185,129,.5);}
+.weight-btn{padding:10px 20px;border-radius:10px;background:linear-gradient(135deg,var(--green),var(--accent2));border:none;color:#fff;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;}
+.weight-btn:hover{opacity:.9;transform:scale(1.02);}
+.weight-chart{width:100%;overflow-x:auto;margin-top:14px;}
+.weight-svg{width:100%;overflow:visible;}
+.weight-history{margin-top:12px;max-height:180px;overflow-y:auto;}
+.weight-entry{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--surface2);border-radius:8px;margin-bottom:5px;font-size:12px;}
+.weight-entry-date{font-family:'Space Mono',monospace;color:var(--muted);font-size:10px;}
+.weight-entry-val{font-family:'Space Mono',monospace;font-weight:700;color:var(--accent2);}
+.weight-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;transition:color .2s;}
+.weight-del:hover{color:var(--red);}
+
+/* Meal tracker */
+.meal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;}
+.meal-card{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:14px;transition:border-color .2s;}
+.meal-card.done{border-color:rgba(16,185,129,.4);background:rgba(16,185,129,.04);}
+.meal-time{font-family:'Space Mono',monospace;font-size:9px;color:var(--accent3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
+.meal-name{font-size:13px;font-weight:700;color:var(--white);margin-bottom:8px;}
+.meal-options{font-size:11px;color:var(--muted);line-height:1.7;margin-bottom:10px;}
+.meal-kcal{font-family:'Space Mono',monospace;font-size:10px;color:var(--accent2);margin-bottom:10px;}
+.meal-check-btn{width:100%;padding:7px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'Space Mono',monospace;font-size:10px;cursor:pointer;transition:all .2s;}
+.meal-card.done .meal-check-btn{background:rgba(16,185,129,.15);color:var(--green);border-color:rgba(16,185,129,.4);}
+
+/* Exercise tracker */
+.exercise-phase{margin-bottom:20px;}
+.exercise-phase-title{font-family:'Space Mono',monospace;font-size:10px;color:var(--accent3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.exercise-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;}
+.ex-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px;cursor:pointer;transition:all .2s;user-select:none;}
+.ex-card:hover{border-color:rgba(124,58,237,.4);}
+.ex-card.done{border-color:rgba(16,185,129,.5);background:rgba(16,185,129,.06);}
+.ex-card.active-ex{border-color:var(--accent3);animation:pulse-badge 1s infinite;}
+.ex-top{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.ex-icon{font-size:20px;}
+.ex-name{font-size:12px;font-weight:700;color:var(--white);}
+.ex-meta{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);}
+.ex-sets{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px;}
+.set-dot{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border);background:transparent;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;font-size:9px;}
+.set-dot.done{background:var(--green);border-color:var(--green);}
+.ex-progress{height:3px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:8px;}
+.ex-progress-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--accent2));border-radius:3px;transition:width .4s ease;}
+
+/* Water tracker */
+.water-bar{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
+.water-cup{width:36px;height:36px;border-radius:8px;border:1.5px solid var(--border);background:transparent;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.water-cup.filled{background:rgba(6,182,212,.2);border-color:var(--accent2);}
+.water-cup:hover{transform:scale(1.1);}
+.water-label{font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;}
+
+/* Meditation */
+.meditation-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;}
+.med-card{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:16px;transition:all .2s;}
+.med-card:hover{border-color:rgba(168,85,247,.4);}
+.med-card.done{border-color:rgba(168,85,247,.5);background:rgba(168,85,247,.05);}
+.med-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.med-icon{font-size:24px;}
+.med-title{font-size:13px;font-weight:700;color:var(--white);}
+.med-duration{font-family:'Space Mono',monospace;font-size:10px;color:var(--purple);}
+.med-desc{font-size:11px;color:var(--muted);line-height:1.7;margin-bottom:12px;}
+.med-steps{font-size:11px;color:var(--muted);line-height:1.8;border-left:2px solid rgba(168,85,247,.3);padding-left:10px;margin-bottom:12px;}
+.med-btn{width:100%;padding:8px;border-radius:8px;border:1px solid rgba(168,85,247,.3);background:rgba(168,85,247,.1);color:var(--purple);font-family:'Space Mono',monospace;font-size:10px;cursor:pointer;transition:all .2s;}
+.med-btn:hover{background:rgba(168,85,247,.2);}
+.med-card.done .med-btn{background:rgba(168,85,247,.2);color:var(--purple);}
+
+/* Daily checklist */
+.daily-check-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;}
+.daily-check-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:all .2s;font-size:12px;color:var(--muted);}
+.daily-check-item:hover{border-color:rgba(16,185,129,.3);color:var(--text);}
+.daily-check-item.checked{background:rgba(16,185,129,.06);border-color:rgba(16,185,129,.4);color:var(--green);}
+.dc-check{width:18px;height:18px;border:1.5px solid var(--border);border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .2s;}
+.daily-check-item.checked .dc-check{background:var(--green);border-color:var(--green);color:#fff;}
+
+/* Progress bar overall */
+.overall-bar-wrap{height:10px;background:var(--surface2);border-radius:10px;overflow:hidden;margin-top:10px;}
+.overall-bar-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--accent2));border-radius:10px;transition:width .8s ease;}
+
+/* Streak + points */
+.streak-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:18px;}
+.streak-badge{display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,rgba(245,158,11,.1),rgba(239,68,68,.08));border:1px solid rgba(245,158,11,.3);border-radius:12px;padding:10px 16px;}
+.streak-num{font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:var(--accent3);}
+.streak-lbl{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;}
+
+/* Tips */
+.tip-strip{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-top:10px;}
+.tip-pill{flex-shrink:0;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:11px;color:var(--muted);}
+.tip-pill span{color:var(--accent2);}
+
+/* Meditation timer overlay */
+.med-timer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:600;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;}
+.med-timer-overlay.open{opacity:1;pointer-events:all;}
+.med-timer-box{background:var(--surface);border:1px solid rgba(168,85,247,.4);border-radius:24px;padding:36px;text-align:center;width:min(360px,90vw);}
+.med-timer-name{font-size:16px;font-weight:700;color:var(--white);margin-bottom:6px;}
+.med-timer-step{font-size:12px;color:var(--muted);font-family:'Space Mono',monospace;margin-bottom:20px;min-height:40px;line-height:1.6;}
+.med-timer-circle{width:140px;height:140px;border-radius:50%;border:3px solid rgba(168,85,247,.3);margin:0 auto 20px;display:flex;align-items:center;justify-content:center;position:relative;}
+.med-timer-circle svg{position:absolute;top:-3px;left:-3px;}
+.med-timer-num{font-family:'Space Mono',monospace;font-size:42px;font-weight:700;color:var(--purple);}
+.med-phase-label{font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:20px;}
+.med-ctrl-btns{display:flex;gap:10px;justify-content:center;}
+.med-ctrl-btn{padding:10px 24px;border-radius:12px;border:none;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;}
+
+/* BMI card */
+.bmi-card{background:linear-gradient(135deg,rgba(124,58,237,.08),rgba(6,182,212,.06));border:1px solid rgba(124,58,237,.2);border-radius:14px;padding:16px;margin-bottom:16px;}
+.bmi-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.bmi-val{font-family:'Space Mono',monospace;font-size:32px;font-weight:700;color:var(--accent3);}
+.bmi-scale{flex:1;min-width:200px;}
+.bmi-bar-track{height:8px;border-radius:8px;background:linear-gradient(90deg,#10b981 0%,#f59e0b 40%,#ef4444 70%,#991b1b 100%);position:relative;margin:6px 0;}
+.bmi-indicator{position:absolute;top:-3px;width:14px;height:14px;border-radius:50%;background:#fff;border:2px solid var(--accent3);transform:translateX(-50%);transition:left .5s ease;}
+
+/* Food rules */
+.rule-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
+.rule-card{padding:12px;border-radius:10px;font-size:11px;line-height:1.7;}
+.rule-card.eat{background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.2);}
+.rule-card.avoid{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);}
+.rule-card-title{font-weight:700;font-size:12px;margin-bottom:6px;}
+.rule-card.eat .rule-card-title{color:var(--green);}
+.rule-card.avoid .rule-card-title{color:var(--red);}
+.rule-card li{color:var(--muted);margin-left:14px;margin-bottom:2px;}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--surface2);border:1px solid var(--green);color:var(--green);font-family:'Space Mono',monospace;font-size:12px;padding:12px 22px;border-radius:12px;z-index:999;opacity:0;transition:all .3s ease;white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:var(--surface2);}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+@keyframes pulse-badge{0%,100%{opacity:1}50%{opacity:.6}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes breathe-expand{0%{transform:scale(1)}100%{transform:scale(1.05)}}
+
+/* Tabs */
+.main-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:22px;padding-bottom:2px;}
+.main-tab{padding:8px 16px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'Space Mono',monospace;font-size:10px;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.main-tab.active{background:rgba(16,185,129,.12);color:var(--green);border-color:rgba(16,185,129,.4);}
+.main-tab:hover:not(.active){color:var(--text);}
+.main-panel{display:none;}
+.main-panel.active{display:block;}
+
+@media(max-width:600px){.stats-bar{grid-template-columns:repeat(2,1fr);}.rule-grid{grid-template-columns:1fr;}.bmi-row{flex-direction:column;}.meal-grid,.exercise-grid,.meditation-grid,.daily-check-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="header-badge">Study Warrior · Fitness Mode · IndexedDB Offline</div>
+    <h1>Body & Mind Tracker 💪</h1>
+    <p class="header-sub">103 kg · 6'1" · Target: 96–97 kg by May Exams · 2,000 kcal/day</p>
+  </div>
+
+  <div class="db-banner" id="db-banner">
+    <div class="db-dot"></div>
+    <span id="db-status">Connecting to offline database...</span>
+  </div>
+
+  <!-- Stats Bar -->
+  <div class="stats-bar">
+    <div class="stat-card"><span class="stat-num" id="stat-weight" style="color:var(--accent2);">103</span><span class="stat-label">Current KG</span></div>
+    <div class="stat-card"><span class="stat-num" id="stat-lost" style="color:var(--green);">0</span><span class="stat-label">KG Lost</span></div>
+    <div class="stat-card"><span class="stat-num" id="stat-streak" style="color:var(--accent3);">0</span><span class="stat-label">🔥 Day Streak</span></div>
+    <div class="stat-card"><span class="stat-num" id="stat-water" style="color:var(--accent2);">0</span><span class="stat-label">Glasses Today</span></div>
+    <div class="stat-card"><span class="stat-num" id="stat-exercise" style="color:var(--green);">0</span><span class="stat-label">Ex. Done</span></div>
+    <div class="stat-card"><span class="stat-num" id="stat-med" style="color:var(--purple);">0</span><span class="stat-label">Med. Sessions</span></div>
+  </div>
+
+  <!-- Overall daily progress -->
+  <div class="section-card" style="padding:16px 20px;margin-bottom:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <span style="font-family:'Space Mono',monospace;font-size:11px;color:var(--accent2);text-transform:uppercase;letter-spacing:1px;">Today's Overall Progress</span>
+      <span style="font-family:'Space Mono',monospace;font-size:18px;font-weight:700;color:var(--white);" id="overall-pct">0%</span>
+    </div>
+    <div class="overall-bar-wrap"><div class="overall-bar-fill" id="overall-bar" style="width:0%"></div></div>
+    <div style="margin-top:8px;font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);" id="today-summary">Complete today's checklist, exercises, meals and meditation to fill this bar.</div>
+  </div>
+
+  <!-- Main tabs -->
+  <div class="main-tabs">
+    <button class="main-tab active" onclick="mainTab(this,'today')">✅ Today</button>
+    <button class="main-tab" onclick="mainTab(this,'exercise')">💪 Exercise</button>
+    <button class="main-tab" onclick="mainTab(this,'diet')">🍽️ Diet</button>
+    <button class="main-tab" onclick="mainTab(this,'meditation')">🧘 Meditation</button>
+    <button class="main-tab" onclick="mainTab(this,'weight')">📊 Weight Log</button>
+    <button class="main-tab" onclick="mainTab(this,'rules')">📋 Rules</button>
+  </div>
+
+  <!-- TODAY TAB -->
+  <div class="main-panel active" id="panel-today">
+    <div class="section-card">
+      <div class="section-title">🗓️ Daily Fitness Checklist</div>
+      <div class="daily-check-grid" id="daily-checks"></div>
+    </div>
+    <div class="section-card">
+      <div class="section-title">💧 Water Tracker — Target 12 glasses (3L)</div>
+      <div class="water-bar" id="water-bar"></div>
+      <div class="water-label" id="water-label">0 / 12 glasses consumed</div>
+    </div>
+    <div class="section-card">
+      <div class="section-title">💡 Today's Tip</div>
+      <div id="daily-tip" style="font-size:13px;color:var(--muted);line-height:1.7;padding:12px;background:var(--surface2);border-radius:10px;border-left:3px solid var(--green);"></div>
+    </div>
+  </div>
+
+  <!-- EXERCISE TAB -->
+  <div class="main-panel" id="panel-exercise">
+    <div class="section-card">
+      <div class="section-title">🌅 Morning Circuit — 20 min (Before Breakfast)</div>
+      <div class="exercise-phase">
+        <div class="exercise-phase-title">⏱ Warm-up (5 min)</div>
+        <div class="exercise-grid" id="ex-warmup"></div>
+      </div>
+      <div class="exercise-phase">
+        <div class="exercise-phase-title">💪 Main Circuit (10 min) — 3 rounds</div>
+        <div class="exercise-grid" id="ex-morning"></div>
+      </div>
+      <div class="exercise-phase">
+        <div class="exercise-phase-title">🧘 Cool-down (5 min)</div>
+        <div class="exercise-grid" id="ex-cooldown"></div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-title">☕ Mid-Study Break — 15 min (Every 90-min session)</div>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:14px;font-family:'Space Mono',monospace;">Do ONE of these quick circuits during your 20-min study break. Light movement — not exhausting.</p>
+      <div class="exercise-grid" id="ex-mid"></div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-title">🌇 Evening Walk — 30 min (After Session 2)</div>
+      <div class="exercise-grid" id="ex-evening"></div>
+      <div style="margin-top:12px;padding:12px;background:var(--surface2);border-radius:10px;border-left:3px solid var(--accent3);">
+        <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--accent3);margin-bottom:4px;">WHY WALKING WORKS BEST FOR YOU RIGHT NOW</div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.7;">At 103 kg, walking burns ~250 kcal/30 min with zero joint stress. It's the single highest fat-loss exercise for your current weight. Combined with diet, this alone creates 400–500 kcal/day deficit. Don't underestimate it.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DIET TAB -->
+  <div class="main-panel" id="panel-diet">
+    <div class="section-card">
+      <div class="section-title">🍽️ Today's Meal Plan — ~2,000 kcal target</div>
+      <div class="meal-grid" id="meal-grid"></div>
+    </div>
+    <div class="section-card">
+      <div class="section-title">🧠 Brain Foods — Add These Daily</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;">
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:24px;margin-bottom:4px;">🥚</div>
+          <div style="font-size:12px;font-weight:700;color:var(--white);">Eggs (daily)</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:4px;">Choline → memory formation. Best brain food.</div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:24px;margin-bottom:4px;">🫘</div>
+          <div style="font-size:12px;font-weight:700;color:var(--white);">Walnuts (6/day)</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:4px;">Omega-3 → brain health, shaped like a brain.</div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:24px;margin-bottom:4px;">🍌</div>
+          <div style="font-size:12px;font-weight:700;color:var(--white);">Banana (1/day)</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:4px;">B6 + natural glucose → 90-min focus boost.</div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:24px;margin-bottom:4px;">🍫</div>
+          <div style="font-size:12px;font-weight:700;color:var(--white);">Dark chocolate (2 sq)</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:4px;">Flavonoids → blood flow to brain. Better than biscuits.</div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:24px;margin-bottom:4px;">🫐</div>
+          <div style="font-size:12px;font-weight:700;color:var(--white);">Roasted Chana</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:4px;">High protein, low cal snack. Best study snack.</div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:24px;margin-bottom:4px;">🍵</div>
+          <div style="font-size:12px;font-weight:700;color:var(--white);">Green Tea (1–2 cups)</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:4px;">L-theanine → calm focus without jitters.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MEDITATION TAB -->
+  <div class="main-panel" id="panel-meditation">
+    <div class="section-card">
+      <div class="section-title" style="margin-bottom:8px;">🧘 Meditation Techniques — For Students</div>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:16px;font-family:'Space Mono',monospace;">Pick 1 technique per day. 10 minutes of proper meditation = 2 hours of better focus. Tap timer button to start guided session.</p>
+      <div class="meditation-grid" id="med-grid"></div>
+    </div>
+  </div>
+
+  <!-- WEIGHT LOG TAB -->
+  <div class="main-panel" id="panel-weight">
+    <div class="section-card">
+      <div class="section-title">⚖️ BMI Overview</div>
+      <div class="bmi-card">
+        <div class="bmi-row">
+          <div>
+            <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:2px;">CURRENT BMI</div>
+            <div class="bmi-val" id="bmi-display">30.1</div>
+            <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--accent3);" id="bmi-label">Obese Class I</div>
+          </div>
+          <div class="bmi-scale">
+            <div style="display:flex;justify-content:space-between;font-family:'Space Mono',monospace;font-size:8px;color:var(--muted);margin-bottom:2px;">
+              <span>Underweight</span><span>Normal</span><span>Overweight</span><span>Obese</span>
+            </div>
+            <div class="bmi-bar-track"><div class="bmi-indicator" id="bmi-indicator" style="left:62%"></div></div>
+            <div style="display:flex;justify-content:space-between;font-family:'Space Mono',monospace;font-size:8px;color:var(--muted);margin-top:2px;">
+              <span>16</span><span>18.5</span><span>25</span><span>30</span><span>40</span>
+            </div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px;">
+          <div style="text-align:center;background:var(--surface);border-radius:8px;padding:8px;">
+            <div style="font-family:'Space Mono',monospace;font-size:14px;font-weight:700;color:var(--white);">185 cm</div>
+            <div style="font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);">Height</div>
+          </div>
+          <div style="text-align:center;background:var(--surface);border-radius:8px;padding:8px;">
+            <div style="font-family:'Space Mono',monospace;font-size:14px;font-weight:700;color:var(--accent3);" id="stat-weight2">103 kg</div>
+            <div style="font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);">Current</div>
+          </div>
+          <div style="text-align:center;background:var(--surface);border-radius:8px;padding:8px;">
+            <div style="font-family:'Space Mono',monospace;font-size:14px;font-weight:700;color:var(--green);">75–88 kg</div>
+            <div style="font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);">Ideal Range</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;">
+        <input class="weight-input" type="number" id="weight-inp" placeholder="e.g. 102.5" step="0.1" min="50" max="200">
+        <button class="weight-btn" onclick="logWeight()">📝 Log Weight</button>
+        <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);">Weigh in morning, empty stomach</div>
+      </div>
+
+      <div class="weight-chart">
+        <svg id="weight-svg" class="weight-svg" height="160"></svg>
+      </div>
+
+      <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--accent2);margin:14px 0 8px;">Recent Entries</div>
+      <div class="weight-history" id="weight-history"></div>
+    </div>
+  </div>
+
+  <!-- RULES TAB -->
+  <div class="main-panel" id="panel-rules">
+    <div class="section-card">
+      <div class="section-title">⚡ The 5 Rules That Do 80% of the Work</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;gap:14px;padding:14px;background:var(--surface2);border-radius:12px;border-left:3px solid var(--green);align-items:flex-start;">
+          <div style="font-size:24px;flex-shrink:0;">🕘</div>
+          <div><div style="font-size:13px;font-weight:700;color:var(--white);margin-bottom:4px;">No food after 8:30 PM</div><div style="font-size:11px;color:var(--muted);line-height:1.6;">Biggest single change. Late night eating converts directly to fat because metabolism slows. Even if you're hungry, drink warm water or herbal tea.</div></div>
+        </div>
+        <div style="display:flex;gap:14px;padding:14px;background:var(--surface2);border-radius:12px;border-left:3px solid var(--accent2);align-items:flex-start;">
+          <div style="font-size:24px;flex-shrink:0;">🍵</div>
+          <div><div style="font-size:13px;font-weight:700;color:var(--white);margin-bottom:4px;">Max 2 chai + zero cold drinks</div><div style="font-size:11px;color:var(--muted);line-height:1.6;">4 cups chai with sugar = 400 empty kcal/day. Cold drinks = 150 kcal per bottle. Cutting both removes ~500 kcal daily with zero effort. Replace with black coffee or green tea.</div></div>
+        </div>
+        <div style="display:flex;gap:14px;padding:14px;background:var(--surface2);border-radius:12px;border-left:3px solid var(--accent3);align-items:flex-start;">
+          <div style="font-size:24px;flex-shrink:0;">🍚</div>
+          <div><div style="font-size:13px;font-weight:700;color:var(--white);margin-bottom:4px;">Half the rice/roti + eat salad first</div><div style="font-size:11px;color:var(--muted);line-height:1.6;">Eat cucumber/onion/tomato salad BEFORE rice. It fills stomach with fibre so you eat 30% less carbs naturally. Cut rice from plate-full to 1 small bowl.</div></div>
+        </div>
+        <div style="display:flex;gap:14px;padding:14px;background:var(--surface2);border-radius:12px;border-left:3px solid var(--purple);align-items:flex-start;">
+          <div style="font-size:24px;flex-shrink:0;">🚶</div>
+          <div><div style="font-size:13px;font-weight:700;color:var(--white);margin-bottom:4px;">20-min walk every study break</div><div style="font-size:11px;color:var(--muted);line-height:1.6;">Already in your study algorithm. At your weight, walking burns 120–140 kcal per 20 minutes. 3 breaks/day = 360–420 kcal burned just from breaks. Don't skip.</div></div>
+        </div>
+        <div style="display:flex;gap:14px;padding:14px;background:var(--surface2);border-radius:12px;border-left:3px solid var(--red);align-items:flex-start;">
+          <div style="font-size:24px;flex-shrink:0;">😴</div>
+          <div><div style="font-size:13px;font-weight:700;color:var(--white);margin-bottom:4px;">7 hours sleep minimum — same time daily</div><div style="font-size:11px;color:var(--muted);line-height:1.6;">Sleep deprivation increases ghrelin (hunger hormone) by 24% — you'll eat 300–400 extra kcal next day just from being tired. Also kills memory consolidation built during study sessions.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-title">🍽️ Food Rules — Eat vs Avoid</div>
+      <div class="rule-grid">
+        <div class="rule-card eat">
+          <div class="rule-card-title">✅ EAT FREELY</div>
+          <ul>
+            <li>Vegetables (all types)</li>
+            <li>Dal, rajma, chole</li>
+            <li>Eggs (any style)</li>
+            <li>Curd / buttermilk / chaas</li>
+            <li>Roasted chana, makhana</li>
+            <li>Fruits (not juices)</li>
+            <li>Green tea, black coffee</li>
+            <li>Nimbu pani (less sugar)</li>
+            <li>Roti (2 per meal max)</li>
+            <li>Walnuts, almonds (handful)</li>
+          </ul>
+        </div>
+        <div class="rule-card avoid">
+          <div class="rule-card-title">❌ AVOID / LIMIT</div>
+          <ul>
+            <li>Cold drinks, packaged juice</li>
+            <li>Chai > 2 cups/day with sugar</li>
+            <li>Fried snacks (vada pav, samosa)</li>
+            <li>Biscuits, namkeen, chips</li>
+            <li>White rice > 1 small bowl</li>
+            <li>Bread > 2 slices</li>
+            <li>Late night eating (after 8:30)</li>
+            <li>Sweets, mithai, chocolate cake</li>
+            <li>Maida items (puri, naan)</li>
+            <li>Milkshakes, energy drinks</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-title">📊 Expected Timeline</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--surface2);border-radius:10px;">
+          <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--accent3);width:80px;flex-shrink:0;">Week 1–2</div>
+          <div style="flex:1;font-size:12px;color:var(--muted);">2–3 kg drop (water weight from cutting sugar/salt)</div>
+          <div style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:var(--accent2);">~100 kg</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--surface2);border-radius:10px;">
+          <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--accent3);width:80px;flex-shrink:0;">Week 3–4</div>
+          <div style="flex:1;font-size:12px;color:var(--muted);">1–1.5 kg real fat loss, energy levels stabilise</div>
+          <div style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:var(--accent2);">~98 kg</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--surface2);border-radius:10px;">
+          <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--green);width:80px;flex-shrink:0;">By May</div>
+          <div style="flex:1;font-size:12px;color:var(--muted);">5–7 kg down, better focus, higher energy in exams</div>
+          <div style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:var(--green);">96–97 kg</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--surface2);border-radius:10px;">
+          <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--green);width:80px;flex-shrink:0;">+3 months</div>
+          <div style="flex:1;font-size:12px;color:var(--muted);">8–12 kg down if habits continue post-exam</div>
+          <div style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:var(--green);">~91 kg</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Meditation Timer Overlay -->
+<div class="med-timer-overlay" id="med-overlay">
+  <div class="med-timer-box">
+    <div class="med-timer-name" id="med-t-name">Meditation</div>
+    <div class="med-timer-step" id="med-t-step">Get comfortable. Close your eyes.</div>
+    <div class="med-timer-circle">
+      <svg width="146" height="146" id="med-t-svg">
+        <circle cx="73" cy="73" r="65" fill="none" stroke="rgba(168,85,247,.15)" stroke-width="3"/>
+        <circle cx="73" cy="73" r="65" fill="none" stroke="#a855f7" stroke-width="3" stroke-dasharray="408" stroke-dashoffset="0" id="med-t-arc" style="transform:rotate(-90deg);transform-origin:73px 73px;transition:stroke-dashoffset .9s linear;"/>
+      </svg>
+      <span class="med-timer-num" id="med-t-num">0:00</span>
+    </div>
+    <div class="med-phase-label" id="med-t-phase">Ready</div>
+    <div class="med-ctrl-btns">
+      <button class="med-ctrl-btn" id="med-t-start-btn" style="background:linear-gradient(135deg,var(--purple),var(--accent));color:#fff;" onclick="startMedTimer()">▶ Start</button>
+      <button class="med-ctrl-btn" style="background:rgba(100,116,139,.1);color:var(--muted);border:1px solid var(--border);" onclick="closeMedTimer()">✕ Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════
+const MEALS=[
+  {id:'m0',time:'Wake up · 7–8 AM',name:'Morning Ritual',kcal:0,options:'2 glasses warm water\n+ 1 tsp soaked methi seeds (optional)',icon:'🌅'},
+  {id:'m1',time:'Breakfast · 8–9 AM',name:'Breakfast',kcal:350,options:'Option A: 3 boiled eggs + 2 wheat bread slices\nOption B: Poha (1 bowl) + 1 banana\nOption C: Oats with milk + handful nuts\nOption D: 2 besan chilla + green chutney',icon:'🥗'},
+  {id:'m2',time:'Lunch · 1–2 PM',name:'Lunch',kcal:600,options:'2 rotis (NOT 4–5) + 1 bowl dal or sabzi\n+ 1 bowl curd/raita\n+ Salad FIRST (cucumber, onion, tomato)\nIf rice: 1 small bowl ONLY',icon:'🍱'},
+  {id:'m3',time:'Snack · 4–5 PM',name:'Study Snack',kcal:150,options:'Option A: 1 banana + black coffee\nOption B: Handful roasted chana ← BEST\nOption C: 2 boiled eggs\nOption D: 1 apple or guava\nOption E: Makhana (fox nuts)',icon:'🍎'},
+  {id:'m4',time:'Dinner · 7–8 PM',name:'Dinner (Light)',kcal:500,options:'2 rotis + 1 bowl dal/sabzi + salad\nOR 1 bowl khichdi + curd\nKeep lighter than lunch!',icon:'🌙'},
+  {id:'m5',time:'Cut zone · After 9 PM',name:'Nothing After 9 PM',kcal:0,options:'Water only after this point.\nIf hungry: warm water or herbal tea.\nThis rule alone = 200–400 kcal/day saved.',icon:'🚫'},
+];
+
+const EXERCISES={
+  warmup:[
+    {id:'ew0',name:'Spot Jogging',icon:'🏃',sets:1,reps:'3 min',rest:'0',desc:'Jog on the spot, lift knees to waist height'},
+    {id:'ew1',name:'Arm Circles',icon:'💫',sets:2,reps:'20 reps each dir',rest:'0',desc:'Forward and backward, loosen shoulders'},
+    {id:'ew2',name:'Neck + Hip Rotation',icon:'🔄',sets:1,reps:'10 each',rest:'0',desc:'Slow gentle rotations — don\'t rush'},
+  ],
+  morning:[
+    {id:'em0',name:'Push-ups',icon:'💪',sets:3,reps:'10 reps',rest:'30s',desc:'From knees if needed. Chest to ground.'},
+    {id:'em1',name:'Squats',icon:'🦵',sets:3,reps:'15 reps',rest:'30s',desc:'Feet shoulder-width. Sit back into it.'},
+    {id:'em2',name:'Plank',icon:'🧱',sets:3,reps:'30 seconds',rest:'20s',desc:'Elbows under shoulders. Core tight.'},
+    {id:'em3',name:'Jumping Jacks',icon:'⚡',sets:2,reps:'30 seconds',rest:'15s',desc:'Full range. Keep breathing.'},
+  ],
+  cooldown:[
+    {id:'ec0',name:'Child\'s Pose',icon:'🧎',sets:1,reps:'60 seconds',rest:'0',desc:'Knees wide, arms extended, forehead down'},
+    {id:'ec1',name:'Standing Forward Fold',icon:'🙏',sets:1,reps:'45 seconds',rest:'0',desc:'Hang loose, bend knees if needed'},
+    {id:'ec2',name:'Deep Breathing',icon:'🌬️',sets:1,reps:'5 breaths',rest:'0',desc:'4 sec inhale, 4 sec hold, 6 sec exhale'},
+  ],
+  mid:[
+    {id:'mid0',name:'Desk Stretch Break',icon:'🤸',sets:1,reps:'5 min',rest:'0',desc:'Neck rolls, shoulder shrugs, wrist circles, spine twist in chair. Zero sweat — pure blood flow.'},
+    {id:'mid1',name:'Wall Push-offs',icon:'🤜',sets:2,reps:'15 reps',rest:'20s',desc:'Stand 1 arm-length from wall. Push against wall like a push-up. Very low intensity.'},
+    {id:'mid2',name:'Calf Raises',icon:'👣',sets:3,reps:'20 reps',rest:'10s',desc:'Stand on edge of step or flat floor. Rise on toes. Can do while making tea.'},
+    {id:'mid3',name:'Shoulder Blade Squeezes',icon:'🦅',sets:3,reps:'15 reps',rest:'10s',desc:'Sit straight. Pull shoulder blades together. Hold 2 sec. Fixes study posture.'},
+    {id:'mid4',name:'Eye Rest + Neck Roll',icon:'👁️',sets:1,reps:'3 min',rest:'0',desc:'Close eyes 20 sec. Look far out window. Slow neck rotations. Reduces headache.'},
+    {id:'mid5',name:'Short Walk (Stairs)',icon:'🚶',sets:1,reps:'5 min',rest:'0',desc:'Walk up/down stairs once or walk to another room and back. 80 kcal burnt without trying.'},
+  ],
+  evening:[
+    {id:'ev0',name:'Evening Walk',icon:'🌇',sets:1,reps:'30 min',rest:'0',desc:'Brisk walk outside. Target: 100 steps/min. Burns 200–250 kcal. Most important exercise of the day.'},
+    {id:'ev1',name:'Stair Climbing',icon:'🪜',sets:3,reps:'5 floors',rest:'60s',desc:'If evening walk not possible. Burns same calories, takes 15 min.'},
+  ],
+};
+
+const MEDITATIONS=[
+  {
+    id:'med0',name:'4-7-8 Breathing',icon:'🌬️',duration:'5 min',
+    desc:'The single most effective technique for exam stress and pre-sleep anxiety. Activates parasympathetic nervous system in 60 seconds.',
+    steps:'1. Exhale completely through mouth\n2. Close mouth. Inhale through nose for 4 counts\n3. Hold breath for 7 counts\n4. Exhale through mouth for 8 counts\n5. This is 1 cycle. Repeat 4–8 times.',
+    phases:[{name:'Inhale',dur:4},{name:'Hold',dur:7},{name:'Exhale',dur:8}],
+    cycles:6,
+    benefit:'Lowers heart rate in 2 min · Reduces cortisol · Improves sleep quality · Perfect before exam',
+  },
+  {
+    id:'med1',name:'Box Breathing',icon:'⬜',duration:'5 min',
+    desc:'Used by Navy SEALs and surgeons for high-pressure focus. Ideal to do right before starting Session 1 or entering exam hall.',
+    steps:'1. Inhale through nose for 4 counts\n2. Hold for 4 counts\n3. Exhale through mouth for 4 counts\n4. Hold empty for 4 counts\n5. That\'s 1 box. Repeat 5–10 times.',
+    phases:[{name:'Inhale',dur:4},{name:'Hold',dur:4},{name:'Exhale',dur:4},{name:'Hold',dur:4}],
+    cycles:7,
+    benefit:'Immediate focus boost · Reduces anxiety · Clears mental fog · Use before exam',
+  },
+  {
+    id:'med2',name:'5-4-3-2-1 Grounding',icon:'🌿',duration:'5 min',
+    desc:'Pulls your mind out of study stress into the present moment. Best when you\'re overwhelmed or panicking.',
+    steps:'Notice 5 things you can SEE\nNotice 4 things you can TOUCH\nNotice 3 things you can HEAR\nNotice 2 things you can SMELL\nNotice 1 thing you can TASTE\nBreathe slowly through each step.',
+    phases:[{name:'See 5 things',dur:30},{name:'Touch 4 things',dur:24},{name:'Hear 3 things',dur:18},{name:'Smell 2 things',dur:12},{name:'Taste 1 thing',dur:6}],
+    cycles:1,
+    benefit:'Stops panic attacks · Works in 2 min · No experience needed · Best for stress peaks',
+  },
+  {
+    id:'med3',name:'Body Scan Relaxation',icon:'🧘',duration:'10 min',
+    desc:'Releases physical tension stored from long study sessions. Best done before sleep — dramatically improves sleep quality and next-day focus.',
+    steps:'Lie down comfortably. Close eyes.\nBring attention to your feet — relax them.\nMove slowly up: calves → thighs → belly → chest → shoulders → neck → face.\nAt each area: tense for 3 sec, then release.\nBreath stays slow and natural throughout.',
+    phases:[{name:'Feet & Calves',dur:60},{name:'Thighs & Hips',dur:60},{name:'Belly & Chest',dur:60},{name:'Shoulders & Arms',dur:60},{name:'Neck & Face',dur:60}],
+    cycles:1,
+    benefit:'Removes tension headaches · Improves sleep by 40% · Do every night before sleep',
+  },
+  {
+    id:'med4',name:'Focus Anchor',icon:'🎯',duration:'7 min',
+    desc:'Trains your brain to return to focus after distraction. Do this ONCE per day during any break. Builds concentration over weeks.',
+    steps:'Sit comfortably. Back straight.\nPick a focus point: your breath, a candle, or a dot on wall.\nSet timer. Keep attention on your anchor.\nWhen mind wanders (it will) — gently bring it back.\nEvery return = one mental "rep". Don\'t fight thoughts.',
+    phases:[{name:'Settle in',dur:30},{name:'Focus on breath',dur:120},{name:'Let thoughts pass',dur:120},{name:'Return to breath',dur:120},{name:'Close out',dur:30}],
+    cycles:1,
+    benefit:'Builds focus stamina over weeks · Reduces mind-wandering during study · Gets easier daily',
+  },
+  {
+    id:'med5',name:'Gratitude Reset',icon:'🙏',duration:'5 min',
+    desc:'Reverses negative thinking spirals about exams and weight. Takes 5 minutes and measurably improves mood for 2+ hours.',
+    steps:'Close eyes. Take 3 slow breaths.\nThink of 3 things you\'re grateful for today — any size.\nFor each one, feel the emotion, not just think the thought.\nVisualize your exam day: confident, writing well.\nEnd with one slow breath and a gentle smile.',
+    phases:[{name:'3 slow breaths',dur:15},{name:'Gratitude 1',dur:40},{name:'Gratitude 2',dur:40},{name:'Gratitude 3',dur:40},{name:'Visualize success',dur:60},{name:'Close',dur:15}],
+    cycles:1,
+    benefit:'Breaks anxiety loops · Builds positive exam mindset · Do every morning before study',
+  },
+];
+
+const DAILY_CHECKS=[
+  {id:'dc0',label:'🌅 Morning circuit (20 min) done'},
+  {id:'dc1',label:'🚫 No food after 8:30 PM'},
+  {id:'dc2',label:'🍵 Max 2 chai today'},
+  {id:'dc3',label:'💧 12 glasses of water'},
+  {id:'dc4',label:'🥗 Ate salad before lunch'},
+  {id:'dc5',label:'🌇 Evening walk (30 min) done'},
+  {id:'dc6',label:'🧘 Meditation (1 session) done'},
+  {id:'dc7',label:'😴 In bed by 10:30 PM tonight'},
+  {id:'dc8',label:'🍚 Half rice/roti portions'},
+  {id:'dc9',label:'🚶 Study break walks done'},
+  {id:'dc10',label:'🧠 Took brain food (eggs/walnuts/banana)'},
+  {id:'dc11',label:'⚡ Mid-study exercise done'},
+];
+
+const TIPS=[
+  'Weigh yourself every morning after toilet, before eating — same conditions each time for accurate tracking.',
+  'Drink 1 glass of water before every meal. It reduces hunger and you\'ll eat 10–15% less naturally.',
+  'The post-lunch crash is from carbs, not quantity. Eat salad first, eat slower — crash reduces by 60%.',
+  'Black coffee 30 min before studying increases focus by 20% and fat burning by 12%. No sugar.',
+  'Skipping breakfast slows metabolism and causes binge eating at lunch. Eat within 1 hour of waking.',
+  'Hunger at 10 PM is almost never real hunger — it\'s habit or boredom. Drink warm water and wait 15 minutes.',
+  '1 hour less sleep = 300–400 extra kcal eaten next day due to ghrelin spike. Sleep is diet.',
+  'Roasted chana: 50g = 180 kcal + 11g protein + keeps you full 2 hours. Best study snack in India.',
+  'Do NOT weigh yourself after dinner or late at night — you\'ll see 1.5–2 kg higher and it\'s just food weight.',
+  'The first 2 weeks will show fastest weight drop (water weight). Don\'t slow down when it plateaus in week 3.',
+  'Eating at the same times daily trains your metabolism — hunger signals become predictable and manageable.',
+  'After meals, a 10-minute slow walk (not exercise) reduces blood sugar spike by 30%. Walk to your study room.',
+];
+
+// ══════════════════════════════════════════
+// DB
+// ══════════════════════════════════════════
+const DB_NAME='FitnessTracker_v1',DB_VER=1,STORE='data';
+let db=null;
+function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open(DB_NAME,DB_VER);r.onupgradeneeded=e=>{const d=e.target.result;if(!d.objectStoreNames.contains(STORE))d.createObjectStore(STORE,{keyPath:'id'});};r.onsuccess=e=>{db=e.target.result;res();};r.onerror=e=>rej(e);});}
+function dbGet(id){return new Promise(r=>{if(!db)return r(null);const q=db.transaction(STORE,'readonly').objectStore(STORE).get(id);q.onsuccess=()=>r(q.result||null);q.onerror=()=>r(null);});}
+function dbPut(d){return new Promise(r=>{if(!db)return r(false);const q=db.transaction(STORE,'readwrite').objectStore(STORE).put(d);q.onsuccess=()=>r(true);q.onerror=()=>r(false);});}
+function dbGetAll(){return new Promise(r=>{if(!db)return r([]);const q=db.transaction(STORE,'readonly').objectStore(STORE).getAll();q.onsuccess=()=>r(q.result||[]);q.onerror=()=>r([]);});}
+
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+let S={};
+const getTodayKey=()=>new Date().toISOString().split('T')[0];
+async function loadAll(){const all=await dbGetAll();S={};all.forEach(i=>S[i.id]=i);}
+async function save(id,data){S[id]={id,...data};await dbPut(S[id]);}
+
+// ══════════════════════════════════════════
+// TABS
+// ══════════════════════════════════════════
+function mainTab(btn,id){
+  document.querySelectorAll('.main-tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.main-panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('panel-'+id).classList.add('active');
+}
+
+// ══════════════════════════════════════════
+// MEALS
+// ══════════════════════════════════════════
+const getMeals=()=>(S['meals_'+getTodayKey()]?.done)||[];
+async function toggleMeal(id){
+  const k='meals_'+getTodayKey();
+  const done=getMeals();
+  const idx=done.indexOf(id);
+  if(idx===-1)done.push(id);else done.splice(idx,1);
+  await save(k,{done});
+  renderMeals();updateOverall();
+}
+function renderMeals(){
+  const done=getMeals();
+  document.getElementById('meal-grid').innerHTML=MEALS.map(m=>`
+    <div class="meal-card ${done.includes(m.id)?'done':''}" onclick="toggleMeal('${m.id}')">
+      <div class="meal-time">${m.time}</div>
+      <div class="meal-name">${m.icon} ${m.name}</div>
+      <div class="meal-options">${m.options.replace(/\n/g,'<br>')}</div>
+      ${m.kcal?`<div class="meal-kcal">~${m.kcal} kcal</div>`:''}
+      <button class="meal-check-btn">${done.includes(m.id)?'✓ Done — tap to unmark':'Tap when done'}</button>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════════
+// EXERCISES
+// ══════════════════════════════════════════
+let EX_SETS={};
+async function loadExSets(){const r=await dbGet('exsets_'+getTodayKey());EX_SETS=r?.data||{};}
+async function saveExSets(){await dbPut({id:'exsets_'+getTodayKey(),data:EX_SETS});}
+
+function renderExGroup(exercises,containerId){
+  const el=document.getElementById(containerId);
+  if(!el)return;
+  el.innerHTML=exercises.map(ex=>{
+    const doneCount=EX_SETS[ex.id]||0;
+    const totalDots=ex.sets;
+    const dots=Array.from({length:totalDots},(_,i)=>`<div class="set-dot ${i<doneCount?'done':''}" onclick="tickSet('${ex.id}',${totalDots},event)">${i<doneCount?'✓':''}</div>`).join('');
+    const pct=Math.round(doneCount/totalDots*100);
+    return `<div class="ex-card ${doneCount>=totalDots?'done':''}" id="excard-${ex.id}">
+      <div class="ex-top"><span class="ex-icon">${ex.icon}</span><div><div class="ex-name">${ex.name}</div><div class="ex-meta">${ex.sets} set${ex.sets>1?'s':''} × ${ex.reps} · Rest ${ex.rest}</div></div></div>
+      <div style="font-size:10px;color:var(--muted);margin-bottom:8px;">${ex.desc}</div>
+      <div class="ex-sets">${dots}</div>
+      <div class="ex-progress"><div class="ex-progress-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+}
+async function tickSet(id,total,e){
+  e.stopPropagation();
+  const cur=EX_SETS[id]||0;
+  EX_SETS[id]=cur>=total?0:cur+1;
+  await saveExSets();
+  renderAllEx();updateOverall();
+  if(EX_SETS[id]>=total)showToast('💪 '+id.replace(/[a-z]+/,'')+ ' set complete!');
+}
+function renderAllEx(){
+  renderExGroup(EXERCISES.warmup,'ex-warmup');
+  renderExGroup(EXERCISES.morning,'ex-morning');
+  renderExGroup(EXERCISES.cooldown,'ex-cooldown');
+  renderExGroup(EXERCISES.mid,'ex-mid');
+  renderExGroup(EXERCISES.evening,'ex-evening');
+}
+
+// ══════════════════════════════════════════
+// WATER
+// ══════════════════════════════════════════
+const getWater=()=>S['water_'+getTodayKey()]?.count||0;
+async function toggleWater(i){
+  const cur=getWater();
+  const nw=i<cur?i:i+1;
+  await save('water_'+getTodayKey(),{count:nw});
+  renderWater();updateOverall();
+  document.getElementById('stat-water').textContent=nw;
+}
+function renderWater(){
+  const cur=getWater();
+  const bar=document.getElementById('water-bar');
+  if(!bar)return;
+  bar.innerHTML=Array.from({length:12},(_,i)=>`
+    <div class="water-cup ${i<cur?'filled':''}" onclick="toggleWater(${i})" title="Glass ${i+1}">💧</div>`).join('');
+  document.getElementById('water-label').textContent=`${cur} / 12 glasses consumed (${Math.round(cur/12*100)}% of 3L target)`;
+}
+
+// ══════════════════════════════════════════
+// DAILY CHECKLIST
+// ══════════════════════════════════════════
+const getDC=()=>S['dc_'+getTodayKey()]?.done||[];
+async function toggleDC(id){
+  const done=getDC();
+  const idx=done.indexOf(id);
+  if(idx===-1)done.push(id);else done.splice(idx,1);
+  await save('dc_'+getTodayKey(),{done});
+  renderDC();updateOverall();
+}
+function renderDC(){
+  const done=getDC();
+  const el=document.getElementById('daily-checks');
+  if(!el)return;
+  el.innerHTML=DAILY_CHECKS.map(d=>`
+    <div class="daily-check-item ${done.includes(d.id)?'checked':''}" onclick="toggleDC('${d.id}')">
+      <div class="dc-check">${done.includes(d.id)?'✓':''}</div>
+      <span>${d.label}</span>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════════
+// MEDITATION
+// ══════════════════════════════════════════
+const getMeds=()=>S['med_'+getTodayKey()]?.done||[];
+async function doneMed(id){
+  const done=getMeds();
+  if(!done.includes(id)){done.push(id);await save('med_'+getTodayKey(),{done});}
+  renderMeds();updateOverall();
+  showToast('🧘 Meditation complete!');
+  document.getElementById('stat-med').textContent=done.length;
+}
+function renderMeds(){
+  const done=getMeds();
+  document.getElementById('med-grid').innerHTML=MEDITATIONS.map(m=>`
+    <div class="med-card ${done.includes(m.id)?'done':''}">
+      <div class="med-header"><span class="med-icon">${m.icon}</span><div><div class="med-title">${m.name}</div><div class="med-duration">⏱ ${m.duration}</div></div></div>
+      <div class="med-desc">${m.desc}</div>
+      <div class="med-steps">${m.steps.replace(/\n/g,'<br>')}</div>
+      <div style="font-size:10px;color:var(--accent2);margin-bottom:10px;font-family:'Space Mono',monospace;">✨ ${m.benefit}</div>
+      <div style="display:flex;gap:8px;">
+        <button class="med-btn" style="flex:1;" onclick="openMedTimer('${m.id}')">▶ Guided Timer</button>
+        <button class="med-btn" style="flex:0;padding:8px 12px;" onclick="doneMed('${m.id}')">${done.includes(m.id)?'✓':'✓ Done'}</button>
+      </div>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════════
+// MEDITATION TIMER
+// ══════════════════════════════════════════
+let medTimerInt=null,medCurPhase=0,medCurCycle=0,medPhaseLeft=0,medRunning=false,medActive=null;
+function openMedTimer(id){
+  medActive=MEDITATIONS.find(m=>m.id===id);
+  medCurPhase=0;medCurCycle=0;medRunning=false;
+  if(medTimerInt)clearInterval(medTimerInt);
+  medPhaseLeft=medActive.phases[0].dur;
+  document.getElementById('med-t-name').textContent=medActive.icon+' '+medActive.name;
+  document.getElementById('med-t-step').textContent=medActive.steps.split('\n')[0];
+  document.getElementById('med-t-num').textContent=formatMedTime(medPhaseLeft);
+  document.getElementById('med-t-phase').textContent=medActive.phases[0].name;
+  document.getElementById('med-t-start-btn').textContent='▶ Start';
+  setMedArc(1);
+  document.getElementById('med-overlay').classList.add('open');
+}
+function closeMedTimer(){document.getElementById('med-overlay').classList.remove('open');if(medTimerInt)clearInterval(medTimerInt);medRunning=false;}
+function formatMedTime(s){return Math.floor(s/60)+':'+(s%60<10?'0':'')+s%60;}
+function setMedArc(pct){document.getElementById('med-t-arc').style.strokeDashoffset=(1-pct)*408;}
+function startMedTimer(){
+  if(!medActive)return;
+  if(medRunning){clearInterval(medTimerInt);medRunning=false;document.getElementById('med-t-start-btn').textContent='▶ Resume';return;}
+  medRunning=true;document.getElementById('med-t-start-btn').textContent='⏸ Pause';
+  const totalPhases=medActive.phases.length;
+  const totalCycles=medActive.cycles;
+  medTimerInt=setInterval(()=>{
+    medPhaseLeft--;
+    const phase=medActive.phases[medCurPhase];
+    const phaseDur=phase.dur;
+    setMedArc(medPhaseLeft/phaseDur);
+    document.getElementById('med-t-num').textContent=formatMedTime(medPhaseLeft);
+    if(medPhaseLeft<=0){
+      medCurPhase++;
+      if(medCurPhase>=totalPhases){
+        medCurPhase=0;medCurCycle++;
+        if(medCurCycle>=totalCycles){
+          clearInterval(medTimerInt);medRunning=false;
+          document.getElementById('med-t-phase').textContent='✅ Complete!';
+          document.getElementById('med-t-num').textContent='Done';
+          document.getElementById('med-t-start-btn').textContent='▶ Start';
+          doneMed(medActive.id);
+          return;
+        }
+      }
+      const np=medActive.phases[medCurPhase];
+      medPhaseLeft=np.dur;
+      document.getElementById('med-t-phase').textContent=np.name+(totalCycles>1?' · Cycle '+(medCurCycle+1)+'/'+totalCycles:'');
+      setMedArc(1);
+    }
+  },1000);
+}
+
+// ══════════════════════════════════════════
+// WEIGHT LOG
+// ══════════════════════════════════════════
+let WEIGHTS=[];
+async function loadWeights(){const r=await dbGet('__weights__');WEIGHTS=r?.data||[];}
+async function logWeight(){
+  const v=parseFloat(document.getElementById('weight-inp').value);
+  if(!v||v<50||v>250){showToast('⚠ Enter a valid weight (50–200 kg)');return;}
+  const entry={date:getTodayKey(),kg:v};
+  WEIGHTS=WEIGHTS.filter(w=>w.date!==getTodayKey());
+  WEIGHTS.push(entry);
+  WEIGHTS.sort((a,b)=>a.date.localeCompare(b.date));
+  await dbPut({id:'__weights__',data:WEIGHTS});
+  renderWeightChart();renderWeightHistory();updateWeightStats();
+  document.getElementById('weight-inp').value='';
+  showToast('⚖️ Weight logged: '+v+' kg');
+}
+async function deleteWeight(date){
+  WEIGHTS=WEIGHTS.filter(w=>w.date!==date);
+  await dbPut({id:'__weights__',data:WEIGHTS});
+  renderWeightChart();renderWeightHistory();updateWeightStats();
+}
+function updateWeightStats(){
+  if(!WEIGHTS.length)return;
+  const latest=WEIGHTS[WEIGHTS.length-1].kg;
+  const start=WEIGHTS[0].kg;
+  const lost=Math.max(0,start-latest).toFixed(1);
+  document.getElementById('stat-weight').textContent=latest;
+  document.getElementById('stat-weight2').textContent=latest+' kg';
+  document.getElementById('stat-lost').textContent=lost;
+  const bmi=(latest/3.4225).toFixed(1);
+  document.getElementById('bmi-display').textContent=bmi;
+  const bmiPct=Math.min((parseFloat(bmi)-16)/(40-16)*100,100);
+  document.getElementById('bmi-indicator').style.left=bmiPct+'%';
+  const lbl=parseFloat(bmi)<18.5?'Underweight':parseFloat(bmi)<25?'Normal Weight':parseFloat(bmi)<30?'Overweight':parseFloat(bmi)<35?'Obese Class I':'Obese Class II';
+  document.getElementById('bmi-label').textContent=lbl;
+}
+function renderWeightHistory(){
+  const el=document.getElementById('weight-history');
+  if(!el)return;
+  const recent=[...WEIGHTS].reverse().slice(0,15);
+  if(!recent.length){el.innerHTML='<div style="color:var(--muted);text-align:center;padding:16px;font-family:\'Space Mono\',monospace;font-size:11px;">No entries yet. Log your weight above.</div>';return;}
+  el.innerHTML=recent.map((w,i)=>{
+    const prev=i<recent.length-1?recent[i+1].kg:null;
+    const diff=prev?(w.kg-prev).toFixed(1):null;
+    const diffStr=diff?(parseFloat(diff)>0?'▲ +'+diff:parseFloat(diff)<0?'▼ '+diff:'—'):'';
+    const diffCol=diff?(parseFloat(diff)>0?'var(--red)':parseFloat(diff)<0?'var(--green)':'var(--muted)'):'var(--muted)';
+    return `<div class="weight-entry">
+      <span class="weight-entry-date">${w.date}</span>
+      <span class="weight-entry-val">${w.kg} kg</span>
+      <span style="font-family:'Space Mono',monospace;font-size:10px;color:${diffCol};width:50px;text-align:center;">${diffStr}</span>
+      <button class="weight-del" onclick="deleteWeight('${w.date}')">✕</button>
+    </div>`;
+  }).join('');
+}
+function renderWeightChart(){
+  const svg=document.getElementById('weight-svg');
+  if(!svg||WEIGHTS.length<2){if(svg)svg.innerHTML='<text x="50%" y="80" text-anchor="middle" font-size="11" font-family="Space Mono,monospace" fill="rgba(255,255,255,.3)">Log at least 2 entries to see chart</text>';return;}
+  const W=svg.parentElement.offsetWidth||600;
+  const H=160;
+  const pad={t:16,r:20,b:30,l:44};
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  svg.setAttribute('width',W);svg.setAttribute('height',H);
+  const iW=W-pad.l-pad.r,iH=H-pad.t-pad.b;
+  const kgs=WEIGHTS.map(w=>w.kg);
+  const minK=Math.min(...kgs)-1,maxK=Math.max(...kgs)+1;
+  const xS=i=>pad.l+(WEIGHTS.length===1?iW/2:i/(WEIGHTS.length-1)*iW);
+  const yS=v=>pad.t+iH-((v-minK)/(maxK-minK)*iH);
+  let out='';
+  // Target line at 97
+  if(minK<97&&maxK>95){const ty=yS(97);out+=`<line x1="${pad.l}" y1="${ty}" x2="${W-pad.r}" y2="${ty}" stroke="rgba(16,185,129,.4)" stroke-width="1" stroke-dasharray="5,3"/><text x="${pad.l-4}" y="${ty+4}" text-anchor="end" font-size="8" font-family="Space Mono,monospace" fill="rgba(16,185,129,.6)">97</text>`;}
+  // Y axis labels
+  [minK,maxK].forEach(v=>{out+=`<text x="${pad.l-6}" y="${yS(v)+4}" text-anchor="end" font-size="9" font-family="Space Mono,monospace" fill="rgba(255,255,255,.3)">${Math.round(v)}</text>`;});
+  // Area
+  let area=`M${xS(0)},${H-pad.b}`;
+  WEIGHTS.forEach((_,i)=>area+=` L${xS(i)},${yS(WEIGHTS[i].kg)}`);
+  area+=` L${xS(WEIGHTS.length-1)},${H-pad.b} Z`;
+  out+=`<defs><linearGradient id="wg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#06b6d4" stop-opacity=".3"/><stop offset="100%" stop-color="#06b6d4" stop-opacity="0"/></linearGradient></defs>`;
+  out+=`<path d="${area}" fill="url(#wg)"/>`;
+  // Line
+  let line=`M${xS(0)},${yS(WEIGHTS[0].kg)}`;
+  WEIGHTS.forEach((_,i)=>{if(i>0)line+=` L${xS(i)},${yS(WEIGHTS[i].kg)}`;});
+  out+=`<path d="${line}" fill="none" stroke="var(--accent2)" stroke-width="2" stroke-linejoin="round"/>`;
+  // Dots
+  WEIGHTS.forEach((w,i)=>{
+    const x=xS(i),y=yS(w.kg);
+    out+=`<circle cx="${x}" cy="${y}" r="4" fill="var(--accent2)" stroke="var(--surface)" stroke-width="2"/>`;
+    if(i===WEIGHTS.length-1)out+=`<text x="${x}" y="${y-10}" text-anchor="middle" font-size="9" font-family="Space Mono,monospace" font-weight="700" fill="var(--accent2)">${w.kg}</text>`;
+  });
+  svg.innerHTML=out;
+}
+
+// ══════════════════════════════════════════
+// STREAK
+// ══════════════════════════════════════════
+async function updateStreak(){
+  const today=getTodayKey();
+  const yest=new Date(Date.now()-86400000).toISOString().split('T')[0];
+  const r=await dbGet('__fstreak__');
+  let streak=r?.streak||0,last=r?.last||'';
+  if(last===today){}
+  else if(last===yest){streak++;await dbPut({id:'__fstreak__',streak,last:today});}
+  else{streak=1;await dbPut({id:'__fstreak__',streak,last:today});}
+  document.getElementById('stat-streak').textContent=streak;
+}
+
+// ══════════════════════════════════════════
+// OVERALL PROGRESS
+// ══════════════════════════════════════════
+function updateOverall(){
+  const dcDone=getDC().length;
+  const mealDone=getMeals().length;
+  const water=Math.min(getWater(),12);
+  const exDone=Object.values(EX_SETS).filter(v=>v>0).length;
+  const medDone=getMeds().length;
+  const total=DAILY_CHECKS.length+MEALS.length+12+Object.keys(EX_SETS).length+1;
+  const achieved=dcDone+mealDone+water+exDone+medDone;
+  const pct=Math.min(Math.round((dcDone/DAILY_CHECKS.length*30)+(mealDone/MEALS.length*20)+(water/12*20)+(Math.min(exDone,8)/8*20)+(medDone>0?10:0)),100);
+  document.getElementById('overall-pct').textContent=pct+'%';
+  document.getElementById('overall-bar').style.width=pct+'%';
+  document.getElementById('stat-exercise').textContent=exDone;
+  document.getElementById('stat-water').textContent=getWater();
+  document.getElementById('stat-med').textContent=medDone;
+  const msgs=['Keep going — start with morning circuit!','Good start! Keep the momentum.','Halfway there — great discipline!','Almost perfect day!','💪 PERFECT FITNESS DAY! 🔥'];
+  document.getElementById('today-summary').textContent=msgs[Math.floor(pct/25)]||msgs[0];
+}
+
+// ══════════════════════════════════════════
+// DAILY TIP
+// ══════════════════════════════════════════
+function renderTip(){
+  const day=new Date().getDay()+new Date().getDate();
+  document.getElementById('daily-tip').innerHTML='💡 '+TIPS[day%TIPS.length];
+}
+
+// ══════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+async function init(){
+  try{
+    await openDB(); await loadAll(); await loadWeights(); await loadExSets();
+    document.getElementById('db-status').textContent='✓ IndexedDB active — 100% offline. All fitness data saved on device.';
+  }catch(e){
+    document.getElementById('db-banner').style.borderColor='rgba(239,68,68,.3)';
+    document.getElementById('db-status').textContent='⚠ Storage error — try Chrome/Firefox.';
+  }
+  renderMeals(); renderAllEx(); renderWater(); renderDC(); renderMeds();
+  renderWeightChart(); renderWeightHistory(); updateWeightStats();
+  updateOverall(); updateStreak(); renderTip();
+  window.addEventListener('resize',()=>{renderWeightChart();});
+}
+init();
+</script>
+</body>
+</html>
